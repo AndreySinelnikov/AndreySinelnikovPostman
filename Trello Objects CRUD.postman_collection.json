@@ -1,0 +1,628 @@
+{
+	"info": {
+		"_postman_id": "71213149-5c40-46c3-9776-0d429f7b385c",
+		"name": "Trello Objects CRUD",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+	},
+	"item": [
+		{
+			"name": "Boards (with tests)",
+			"item": [
+				{
+					"name": "Create a board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var query = {};\r",
+									"pm.request.url.query.all().forEach((param) => { query[param.key] = param.value});\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Query parameter 'name' is equal to response attribute 'name' \", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData.name).to.eql(query[\"name\"]);\r",
+									"});\r",
+									"\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [],
+							"options": {
+								"raw": {
+									"language": "text"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{boardsEndpoint}}/?key={{apiKey}}&token={{apiToken}}&name=&desc",
+							"host": [
+								"{{baseUrl}}{{boardsEndpoint}}"
+							],
+							"path": [
+								""
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "name",
+									"value": "",
+									"description": "REQUIRED. The new name for the board. 1 to 16384 characters long."
+								},
+								{
+									"key": "desc",
+									"value": null,
+									"description": "A new description for the board, 0 to 16384 characters long"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Response JSON '_value' attribute is null\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    pm.expect(jsonData._value).to.eql(null);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "DELETE",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{boardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}",
+							"host": [
+								"{{baseUrl}}{{boardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "REQUIRED. Id of a board, found in its JSON representation"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a board",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									"pm.collectionVariables.set(\"actualId\", pm.request.url.variables.get(\"id\"));"
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.test(\"Actual value of path variable 'id' is equal to response attribute 'id'\", function () {\r",
+									"    var jsonData = pm.response.json();\r",
+									"    var actualId = pm.collectionVariables.get(\"actualId\"); // 'actualId' set by Pre-request Script\r",
+									"    pm.expect(jsonData.id).to.eql(actualId);\r",
+									"});\r",
+									"\r",
+									"pm.collectionVariables.unset(\"actualId\");\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{boardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}",
+							"host": [
+								"{{baseUrl}}{{boardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "REQUIRED. Id of a board, found in its JSON representation."
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{boardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name=&desc=",
+							"host": [
+								"{{baseUrl}}{{boardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "name",
+									"value": "",
+									"description": "The new name for the board. 1 to 16384 characters long."
+								},
+								{
+									"key": "desc",
+									"value": "",
+									"description": "A new description for the board, 0 to 16384 characters long"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "REQUIRED. Id of the board."
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Lists",
+			"item": [
+				{
+					"name": "Create a list",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{listsEndpoint}}?key={{apiKey}}&token={{apiToken}}&name=&idBoard=",
+							"host": [
+								"{{baseUrl}}{{listsEndpoint}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "name",
+									"value": "",
+									"description": "REQUIRED. Name for the list"
+								},
+								{
+									"key": "idBoard",
+									"value": "",
+									"description": "REQUIRED. The long ID of the board the list should be created on"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Archive/unarchive a list",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{listsEndpoint}}/:id/closed?key={{apiKey}}&token={{apiToken}}&value=",
+							"host": [
+								"{{baseUrl}}{{listsEndpoint}}"
+							],
+							"path": [
+								":id",
+								"closed"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "value",
+									"value": "",
+									"description": "Set to true to close (archive) the list, to false to unarchive"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "REQUIRED. The ID of the list"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a list",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{listsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&fields=all",
+							"host": [
+								"{{baseUrl}}{{listsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "fields",
+									"value": "all",
+									"description": "'all' or a comma separated list of List field names."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "The ID of the list"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a list",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{listsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name=&closed=false",
+							"host": [
+								"{{baseUrl}}{{listsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "name",
+									"value": "",
+									"description": "New name of the list"
+								},
+								{
+									"key": "idBoard",
+									"value": "",
+									"description": "ID of a board the list should be moved to",
+									"disabled": true
+								},
+								{
+									"key": "closed",
+									"value": "false",
+									"description": "boolean. Whether the list should be closed (archived)"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "REQUIRED. The ID of the list"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Cards",
+			"item": [
+				{
+					"name": "Create a card",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{cardsEndpoint}}?key={{apiKey}}&token={{apiToken}}&idList=&name=&desc",
+							"host": [
+								"{{baseUrl}}{{cardsEndpoint}}"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "idList",
+									"value": "",
+									"description": "REQUIRED. The ID of the list the card should be created in"
+								},
+								{
+									"key": "name",
+									"value": "",
+									"description": "The name for the card"
+								},
+								{
+									"key": "desc",
+									"value": null,
+									"description": "The description for the card"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a card",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{cardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}",
+							"host": [
+								"{{baseUrl}}{{cardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "REQUIRED. The ID of the Card"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a card",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{cardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&fields=all",
+							"host": [
+								"{{baseUrl}}{{cardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "fields",
+									"value": "all",
+									"description": "'all' or a comma-separated list of fields."
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "",
+									"description": "REQUIRED. The ID of the Card"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a card",
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{cardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name&desc=&closed=false",
+							"host": [
+								"{{baseUrl}}{{cardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "name",
+									"value": null,
+									"description": "The new name for the card"
+								},
+								{
+									"key": "desc",
+									"value": "",
+									"description": "The new description for the card"
+								},
+								{
+									"key": "closed",
+									"value": "false",
+									"description": "Whether the card should be archived (closed: true)"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "614f05df68208331c43c7e07",
+									"description": "REQUIRED. The ID of the Card"
+								}
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	]
+}
