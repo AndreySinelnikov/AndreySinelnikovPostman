@@ -15,18 +15,19 @@
 							"listen": "test",
 							"script": {
 								"exec": [
-									"var query = {};\r",
-									"pm.request.url.query.all().forEach((param) => { query[param.key] = param.value});\r",
 									"\r",
 									"pm.test(\"Status code is 200\", function () {\r",
 									"    pm.response.to.have.status(200);\r",
 									"});\r",
 									"\r",
-									"pm.test(\"Query parameter 'name' is equal to response attribute 'name' \", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    pm.expect(jsonData.name).to.eql(query[\"name\"]);\r",
+									"var actualJson = pm.response.json();\r",
+									"\r",
+									"pm.test(\"Request parameter 'name' is equal to response parameter 'name' \", function () {\r",
+									"    var expectedName = decodeURIComponent(pm.request.url.query.get(\"name\"));  // since space becomes %20\r",
+									"    pm.expect(actualJson.name).to.eql(expectedName);\r",
 									"});\r",
 									"\r",
+									"pm.environment.set(\"tempBoardId\", actualJson.id); // writes the ID of successfully created board into  tempBoardId environment variable, elimininating the need to type it by hand\r",
 									"\r",
 									""
 								],
@@ -42,7 +43,18 @@
 						"header": [],
 						"body": {
 							"mode": "formdata",
-							"formdata": [],
+							"formdata": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}",
+									"type": "text"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}",
+									"type": "text"
+								}
+							],
 							"options": {
 								"raw": {
 									"language": "text"
@@ -50,7 +62,7 @@
 							}
 						},
 						"url": {
-							"raw": "{{baseUrl}}{{boardsEndpoint}}/?key={{apiKey}}&token={{apiToken}}&name=&desc",
+							"raw": "{{baseUrl}}{{boardsEndpoint}}/?key={{apiKey}}&token={{apiToken}}&name={{defaultBoardName}}&desc={{defaultBoardDescription}}",
 							"host": [
 								"{{baseUrl}}{{boardsEndpoint}}"
 							],
@@ -68,13 +80,168 @@
 								},
 								{
 									"key": "name",
-									"value": "",
+									"value": "{{defaultBoardName}}",
 									"description": "REQUIRED. The new name for the board. 1 to 16384 characters long."
 								},
 								{
 									"key": "desc",
-									"value": null,
+									"value": "{{defaultBoardDescription}}",
 									"description": "A new description for the board, 0 to 16384 characters long"
+								},
+								{
+									"key": "",
+									"value": "",
+									"disabled": true
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get a board",
+					"event": [
+						{
+							"listen": "prerequest",
+							"script": {
+								"exec": [
+									""
+								],
+								"type": "text/javascript"
+							}
+						},
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"\r",
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Request parameter 'id' is equal to response parameter 'id'\", function () {\r",
+									"    var expectedBoardId = environment.tempBoardId;\r",
+									"    var actualId = pm.response.json().id;\r",
+									"    pm.expect(actualId).to.eql(expectedBoardId);\r",
+									"});\r",
+									"\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{boardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}",
+							"host": [
+								"{{baseUrl}}{{boardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{tempBoardId}}",
+									"description": "REQUIRED. Id of a board, found in its JSON representation."
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update a board",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.test(\"Values of the request parameters 'name' and 'desc' are equal to the values of the response parameters 'name' and 'desc'\", function () {\r",
+									"    var expectedName = decodeURIComponent(pm.request.url.query.get(\"name\"));\r",
+									"    var expectedDescription = decodeURIComponent(pm.request.url.query.get(\"desc\"));\r",
+									"    var actualJson = pm.response.json();\r",
+									"\r",
+									"    pm.expect(actualJson.name).to.eql(expectedName);\r",
+									"    pm.expect(actualJson.desc).to.eql(expectedDescription);\r",
+									"\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}",
+									"type": "text"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}",
+									"type": "text"
+								}
+							]
+						},
+						"url": {
+							"raw": "{{baseUrl}}{{boardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name={{defaultBoardName}}&desc={{defaultBoardDescription}}",
+							"host": [
+								"{{baseUrl}}{{boardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "name",
+									"value": "{{defaultBoardName}}",
+									"description": "The new name for the board. 1 to 16384 characters long."
+								},
+								{
+									"key": "desc",
+									"value": "{{defaultBoardDescription}}",
+									"description": "A new description for the board, 0 to 16384 characters long"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{tempBoardId}}",
+									"description": "REQUIRED. Id of the board."
 								}
 							]
 						}
@@ -132,136 +299,8 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "",
+									"value": "{{tempBoardId}}",
 									"description": "REQUIRED. Id of a board, found in its JSON representation"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get a board",
-					"event": [
-						{
-							"listen": "prerequest",
-							"script": {
-								"exec": [
-									"pm.collectionVariables.set(\"actualId\", pm.request.url.variables.get(\"id\"));"
-								],
-								"type": "text/javascript"
-							}
-						},
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"\r",
-									"\r",
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});\r",
-									"\r",
-									"\r",
-									"pm.test(\"Actual value of path variable 'id' is equal to response attribute 'id'\", function () {\r",
-									"    var jsonData = pm.response.json();\r",
-									"    var actualId = pm.collectionVariables.get(\"actualId\"); // 'actualId' set by Pre-request Script\r",
-									"    pm.expect(jsonData.id).to.eql(actualId);\r",
-									"});\r",
-									"\r",
-									"pm.collectionVariables.unset(\"actualId\");\r",
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"auth": {
-							"type": "noauth"
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}{{boardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}",
-							"host": [
-								"{{baseUrl}}{{boardsEndpoint}}"
-							],
-							"path": [
-								":id"
-							],
-							"query": [
-								{
-									"key": "key",
-									"value": "{{apiKey}}"
-								},
-								{
-									"key": "token",
-									"value": "{{apiToken}}"
-								}
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "",
-									"description": "REQUIRED. Id of a board, found in its JSON representation."
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Update a board",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									"pm.test(\"Status code is 200\", function () {\r",
-									"    pm.response.to.have.status(200);\r",
-									"});"
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}{{boardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name=&desc=",
-							"host": [
-								"{{baseUrl}}{{boardsEndpoint}}"
-							],
-							"path": [
-								":id"
-							],
-							"query": [
-								{
-									"key": "key",
-									"value": "{{apiKey}}"
-								},
-								{
-									"key": "token",
-									"value": "{{apiToken}}"
-								},
-								{
-									"key": "name",
-									"value": "",
-									"description": "The new name for the board. 1 to 16384 characters long."
-								},
-								{
-									"key": "desc",
-									"value": "",
-									"description": "A new description for the board, 0 to 16384 characters long"
-								}
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "",
-									"description": "REQUIRED. Id of the board."
 								}
 							]
 						}
@@ -275,11 +314,28 @@
 			"item": [
 				{
 					"name": "Create a list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"\r",
+									"pm.environment.set(\"tempListId\", pm.response.json().id);  // sets tempListId variable to the ID of the last created List\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}{{listsEndpoint}}?key={{apiKey}}&token={{apiToken}}&name=&idBoard=",
+							"raw": "{{baseUrl}}{{listsEndpoint}}?key={{apiKey}}&token={{apiToken}}&name={{defaultListName}}&idBoard={{tempBoardId}}",
 							"host": [
 								"{{baseUrl}}{{listsEndpoint}}"
 							],
@@ -294,12 +350,12 @@
 								},
 								{
 									"key": "name",
-									"value": "",
+									"value": "{{defaultListName}}",
 									"description": "REQUIRED. Name for the list"
 								},
 								{
 									"key": "idBoard",
-									"value": "",
+									"value": "{{tempBoardId}}",
 									"description": "REQUIRED. The long ID of the board the list should be created on"
 								}
 							]
@@ -308,47 +364,20 @@
 					"response": []
 				},
 				{
-					"name": "Archive/unarchive a list",
-					"request": {
-						"method": "PUT",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}{{listsEndpoint}}/:id/closed?key={{apiKey}}&token={{apiToken}}&value=",
-							"host": [
-								"{{baseUrl}}{{listsEndpoint}}"
-							],
-							"path": [
-								":id",
-								"closed"
-							],
-							"query": [
-								{
-									"key": "key",
-									"value": "{{apiKey}}"
-								},
-								{
-									"key": "token",
-									"value": "{{apiToken}}"
-								},
-								{
-									"key": "value",
-									"value": "",
-									"description": "Set to true to close (archive) the list, to false to unarchive"
-								}
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "",
-									"description": "REQUIRED. The ID of the list"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
 					"name": "Get a list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "GET",
 						"header": [],
@@ -378,7 +407,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "",
+									"value": "{{tempListId}}",
 									"description": "The ID of the list"
 								}
 							]
@@ -388,11 +417,24 @@
 				},
 				{
 					"name": "Update a list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "PUT",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}{{listsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name=&closed=false",
+							"raw": "{{baseUrl}}{{listsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name={{defaultListName}}&closed=false",
 							"host": [
 								"{{baseUrl}}{{listsEndpoint}}"
 							],
@@ -410,14 +452,8 @@
 								},
 								{
 									"key": "name",
-									"value": "",
+									"value": "{{defaultListName}}",
 									"description": "New name of the list"
-								},
-								{
-									"key": "idBoard",
-									"value": "",
-									"description": "ID of a board the list should be moved to",
-									"disabled": true
 								},
 								{
 									"key": "closed",
@@ -428,7 +464,60 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "",
+									"value": "{{tempListId}}",
+									"description": "REQUIRED. The ID of the list"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Archive/unarchive a list",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "PUT",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{listsEndpoint}}/:id/closed?key={{apiKey}}&token={{apiToken}}&value=true",
+							"host": [
+								"{{baseUrl}}{{listsEndpoint}}"
+							],
+							"path": [
+								":id",
+								"closed"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								},
+								{
+									"key": "value",
+									"value": "true",
+									"description": "Set to true to close (archive) the list, to false to unarchive"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{tempListId}}",
 									"description": "REQUIRED. The ID of the list"
 								}
 							]
@@ -443,11 +532,26 @@
 			"item": [
 				{
 					"name": "Create a card",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"pm.test(\"Status code is 200\", function () {\r",
+									"    pm.response.to.have.status(200);\r",
+									"});\r",
+									"\r",
+									"pm.environment.set(\"tempCardId\", pm.response.json().id);"
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
 					"request": {
 						"method": "POST",
 						"header": [],
 						"url": {
-							"raw": "{{baseUrl}}{{cardsEndpoint}}?key={{apiKey}}&token={{apiToken}}&idList=&name=&desc",
+							"raw": "{{baseUrl}}{{cardsEndpoint}}?key={{apiKey}}&token={{apiToken}}&idList={{tempListId}}&name={{defaultCardName}}&desc={{defaultCardDescription}}",
 							"host": [
 								"{{baseUrl}}{{cardsEndpoint}}"
 							],
@@ -462,52 +566,18 @@
 								},
 								{
 									"key": "idList",
-									"value": "",
+									"value": "{{tempListId}}",
 									"description": "REQUIRED. The ID of the list the card should be created in"
 								},
 								{
 									"key": "name",
-									"value": "",
+									"value": "{{defaultCardName}}",
 									"description": "The name for the card"
 								},
 								{
 									"key": "desc",
-									"value": null,
+									"value": "{{defaultCardDescription}}",
 									"description": "The description for the card"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Delete a card",
-					"request": {
-						"method": "DELETE",
-						"header": [],
-						"url": {
-							"raw": "{{baseUrl}}{{cardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}",
-							"host": [
-								"{{baseUrl}}{{cardsEndpoint}}"
-							],
-							"path": [
-								":id"
-							],
-							"query": [
-								{
-									"key": "key",
-									"value": "{{apiKey}}"
-								},
-								{
-									"key": "token",
-									"value": "{{apiToken}}"
-								}
-							],
-							"variable": [
-								{
-									"key": "id",
-									"value": "",
-									"description": "REQUIRED. The ID of the Card"
 								}
 							]
 						}
@@ -558,8 +628,12 @@
 					"request": {
 						"method": "PUT",
 						"header": [],
+						"body": {
+							"mode": "formdata",
+							"formdata": []
+						},
 						"url": {
-							"raw": "{{baseUrl}}{{cardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name&desc=&closed=false",
+							"raw": "{{baseUrl}}{{cardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}&name={{defaultCardName}}&desc={{defaultCardDescription}}&closed=false",
 							"host": [
 								"{{baseUrl}}{{cardsEndpoint}}"
 							],
@@ -577,12 +651,12 @@
 								},
 								{
 									"key": "name",
-									"value": null,
+									"value": "{{defaultCardName}}",
 									"description": "The new name for the card"
 								},
 								{
 									"key": "desc",
-									"value": "",
+									"value": "{{defaultCardDescription}}",
 									"description": "The new description for the card"
 								},
 								{
@@ -594,7 +668,41 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "614f05df68208331c43c7e07",
+									"value": "{{tempCardId}}",
+									"description": "REQUIRED. The ID of the Card"
+								}
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete a card",
+					"request": {
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{baseUrl}}{{cardsEndpoint}}/:id?key={{apiKey}}&token={{apiToken}}",
+							"host": [
+								"{{baseUrl}}{{cardsEndpoint}}"
+							],
+							"path": [
+								":id"
+							],
+							"query": [
+								{
+									"key": "key",
+									"value": "{{apiKey}}"
+								},
+								{
+									"key": "token",
+									"value": "{{apiToken}}"
+								}
+							],
+							"variable": [
+								{
+									"key": "id",
+									"value": "{{tempCardId}}",
 									"description": "REQUIRED. The ID of the Card"
 								}
 							]
