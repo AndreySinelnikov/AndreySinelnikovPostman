@@ -615,7 +615,7 @@
 							"variable": [
 								{
 									"key": "id",
-									"value": "",
+									"value": "{{tempCardId}}",
 									"description": "REQUIRED. The ID of the Card"
 								}
 							]
